@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Toko TKJ – Order Online</title>
+  <style>
+    :root{
+      --bg:#0f172a;           /* slate-900 */
+      --card:#111827ee;       /* gray-900 */
+      --muted:#94a3b8;        /* slate-400 */
+      --text:#e5e7eb;         /* gray-200 */
+      --brand:#22c55e;        /* green-500 */
+      --brand-2:#14b8a6;      /* teal-500 */
+      --accent:#f59e0b;       /* amber-500 */
+      --danger:#ef4444;       /* red-500 */
+      --ring:#38bdf8;         /* sky-400 */
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:linear-gradient(180deg,#0b1024 0%, #0f172a 100%);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Ubuntu,"Helvetica Neue",Arial}
+    a{color:inherit}
+    .container{max-width:1100px;margin:0 auto;padding:24px}
+    header{position:sticky;top:0;z-index:20;background:rgba(15,23,42,.7);backdrop-filter:blur(12px);border-bottom:1px solid rgba(148,163,184,.12)}
+    .nav{display:flex;gap:16px;justify-content:space-between;align-items:center;padding:14px 24px}
+    .brand{display:flex;gap:12px;align-items:center;font-weight:800;letter-spacing:.3px}
+    .brand .logo{width:36px;height:36px;border-radius:12px;background:radial-gradient(circle at 30% 30%, #34d399, #22c55e 40%, #065f46 80%);box-shadow:var(--shadow)}
+    .search{display:flex;gap:8px;align-items:center;background:#0b1227;border:1px solid rgba(148,163,184,.2);border-radius:14px;padding:8px 10px;flex:1;max-width:520px}
+    .search input{flex:1;background:transparent;border:0;color:var(--text);outline:none}
+    .btn{display:inline-flex;align-items:center;gap:8px;background:var(--brand);border:0;color:#061617;padding:10px 14px;border-radius:14px;font-weight:700;cursor:pointer;box-shadow:var(--shadow)}
+    .btn.secondary{background:#0b1227;color:var(--text);border:1px solid rgba(148,163,184,.25)}
+    .btn.ghost{background:transparent;border:1px solid rgba(148,163,184,.25);color:var(--text)}
+    .btn:focus{outline:2px solid var(--ring);outline-offset:2px}
+
+    .grid{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:18px}
+    @media(min-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media(min-width:960px){.grid{grid-template-columns:repeat(3,1fr)}}
+
+    .card{background:linear-gradient(180deg,#0b1227, #0b1227f0);border:1px solid rgba(148,163,184,.18);border-radius:18px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+    .card .imgwrap{position:relative;overflow:hidden}
+    .card img{width:100%;height:200px;object-fit:cover;display:block;transition:transform .35s ease}
+    .card:hover img{transform:scale(1.04)}
+    .badges{position:absolute;inset:auto 10px 10px auto;display:flex;gap:6px;flex-wrap:wrap}
+    .badge{background:rgba(34,197,94,.95);color:#052e16;font-weight:800;font-size:12px;padding:6px 8px;border-radius:999px;border:1px solid #16a34a}
+    .content{padding:14px 14px 0}
+    .title{font-weight:800;font-size:18px}
+    .desc{color:var(--muted);font-size:14px;line-height:1.5;margin:6px 0 10px}
+    .price{display:flex;align-items:center;justify-content:space-between;padding:0 14px 14px}
+    .qty{display:flex;align-items:center;gap:8px}
+    .qty button{width:36px;height:36px;border-radius:12px;border:1px solid rgba(148,163,184,.3);background:#0b1227;color:var(--text);font-weight:800;cursor:pointer}
+
+    /* Cart Drawer */
+    .drawer{position:fixed;top:0;right:-420px;width:420px;max-width:95vw;height:100dvh;background:#0b1227;border-left:1px solid rgba(148,163,184,.18);box-shadow:var(--shadow);z-index:40;display:flex;flex-direction:column;transition:right .3s ease}
+    .drawer.open{right:0}
+    .drawer header{position:sticky;top:0;background:#0b1227;border-bottom:1px solid rgba(148,163,184,.18)}
+    .drawer .items{flex:1;overflow:auto;padding:12px}
+    .row{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;background:#0f162e;border:1px solid rgba(148,163,184,.15);border-radius:14px;padding:8px;margin:8px 0}
+    .row img{width:64px;height:64px;border-radius:10px;object-fit:cover}
+    .row .title{font-weight:700}
+    .row .muted{color:var(--muted);font-size:12px}
+    .row .actions{display:flex;flex-direction:column;gap:6px;align-items:end}
+
+    .summary{padding:12px;border-top:1px solid rgba(148,163,184,.18);display:grid;gap:8px}
+    .summary .line{display:flex;justify-content:space-between}
+    .summary .total{font-size:20px;font-weight:900}
+
+    /* Checkout Sheet */
+    dialog{width:min(820px,96vw);border:1px solid rgba(148,163,184,.2);background:#0b1227;border-radius:18px;box-shadow:var(--shadow)}
+    dialog::backdrop{background:rgba(0,0,0,.5)}
+    .sheet{display:grid;grid-template-columns:1fr;gap:16px}
+    @media(min-width:900px){.sheet{grid-template-columns:1fr 360px}}
+    .cardish{background:#0f162e;border:1px solid rgba(148,163,184,.18);border-radius:16px;padding:14px}
+    .formgrid{display:grid;grid-template-columns:1fr;gap:12px}
+    @media(min-width:600px){.formgrid{grid-template-columns:1fr 1fr}}
+    label{font-size:13px;color:var(--muted)}
+    input, textarea, select{width:100%;background:#0b1227;border:1px solid rgba(148,163,184,.28);border-radius:12px;padding:10px 12px;color:var(--text)}
+    textarea{min-height:76px}
+    .radio{display:flex;gap:10px;flex-wrap:wrap}
+    .chip{border:1px solid rgba(148,163,184,.28);padding:8px 10px;border-radius:12px;cursor:pointer;background:#0b1227}
+    .chip.active{border-color:var(--brand);outline:2px solid rgba(34,197,94,.25)}
+    .coupon{display:flex;gap:8px}
+
+    /* Toast */
+    .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#111827;border:1px solid rgba(148,163,184,.25);padding:12px 16px;border-radius:12px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .25s ease}
+    .toast.show{opacity:1}
+
+    .footnote{color:var(--muted);font-size:12px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="nav container">
+      <div class="brand" aria-label="Brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <div>Warung TKJ <span style="color:var(--brand)">Online</span></div>
+          <small class="footnote">berbagai macam jenis disini 🍛</small>
+        </div>
+      </div>
+      <div class="search" role="search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 21l-3.8-3.8" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/><circle cx="11" cy="11" r="7" stroke="#94a3b8" stroke-width="2"/></svg>
+        <input id="search" placeholder="Cari Menu…" />
+      </div>
+      <button id="btnCart" class="btn" aria-haspopup="dialog" aria-controls="drawer" title="Buka keranjang">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 3h2l.4 2M7 13h10l3-8H6.4" stroke="#061617" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="20" r="1.8" fill="#061617"/><circle cx="18" cy="20" r="1.8" fill="#061617"/></svg>
+        <span>Keranjang <span id="cartCount" style="margin-left:6px;background:#052e16;color:#a7f3d0;padding:2px 8px;border-radius:999px;font-size:12px">0</span></span>
+      </button>
+    </div>
+  </header>
+
+  <main class="container" style="padding-top:18px">
+    <section style="margin:8px 0 16px">
+      <h1 style="margin:0 0 6px;font-size:28px">Menu yang seadanya</h1>
+      <p class="footnote">Klik tambah untuk memasukkan ke keranjang. Minimalis, cepat, dan siap checkout ✨</p>
+    </section>
+
+    <div id="productGrid" class="grid" aria-live="polite"></div>
+  </main>
+
+  <!-- Cart Drawer -->
+  <aside id="drawer" class="drawer" role="dialog" aria-label="Keranjang belanja" aria-modal="true">
+    <header class="nav" style="padding:12px 16px">
+      <strong>Keranjang</strong>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn ghost" id="clearCart">Bersihkan</button>
+        <button class="btn secondary" id="closeDrawer">Tutup</button>
+      </div>
+    </header>
+    <div class="items" id="cartItems"></div>
+    <div class="summary">
+      <div class="line"><span>Subtotal</span><span id="sumSubtotal">Rp0</span></div>
+      <div class="line"><span>Diskon</span><span id="sumDiscount">- Rp0</span></div>
+      <div class="line"><span>PPN (11%)</span><span id="sumTax">Rp0</span></div>
+      <div class="line"><span>Ongkir</span><span id="sumShip">Rp0</span></div>
+      <hr style="border:0;border-top:1px solid rgba(148,163,184,.18)"/>
+      <div class="line total"><span>Total</span><span id="sumTotal">Rp0</span></div>
+      <button id="btnCheckout" class="btn" style="width:100%">Lanjutkan ke Checkout</button>
+      <span class="footnote">Gratis ongkir untuk pesanan ≥ Rp100.000 (dalam kota).</span>
+    </div>
+  </aside>
+
+  <!-- Checkout Dialog -->
+  <dialog id="checkoutDialog">
+    <form method="dialog" class="sheet">
+      <div class="cardish">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <h2 style="margin:0">Checkout</h2>
+          <button id="closeCheckout" class="btn ghost">Tutup</button>
+        </div>
+        <div class="formgrid">
+          <div>
+            <label>Nama Penerima</label>
+            <input id="fName" placeholder="Nama lengkap" required />
+          </div>
+          <div>
+            <label>No. WhatsApp</label>
+            <input id="fPhone" placeholder="628xxxxxxxxxx" required />
+          </div>
+          <div style="grid-column:1/-1">
+            <label>Alamat Lengkap</label>
+            <textarea id="fAddress" placeholder="Jalan, patokan, kecamatan" required></textarea>
+          </div>
+          <div>
+            <label>Metode Pengiriman</label>
+            <div class="radio">
+              <button type="button" class="chip active" data-ship="delivery">Antar</button>
+              <button type="button" class="chip" data-ship="pickup">Ambil Sendiri</button>
+            </div>
+          </div>
+          <div>
+            <label>Metode Pembayaran</label>
+            <select id="fPay">
+              <option>COD (Bayar di tempat)</option>
+              <option>Transfer Bank</option>
+              <option>E-Wallet</option>
+            </select>
+          </div>
+          <div style="grid-column:1/-1">
+            <label>Catatan</label>
+            <textarea id="fNote" placeholder="Tingkat kepedasan, tanpa bawang, dll"></textarea>
+          </div>
+          <div style="grid-column:1/-1" class="coupon">
+            <input id="fCoupon" placeholder="Kode kupon (contoh: MAKANHEMAT)" />
+            <button id="applyCoupon" type="button" class="btn secondary">Terapkan</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="cardish" style="height:100%;display:flex;flex-direction:column">
+        <h3 style="margin-top:0">Ringkasan</h3>
+        <div id="checkoutList" style="flex:1;overflow:auto;max-height:50vh"></div>
+        <div style="border-top:1px solid rgba(148,163,184,.18);padding-top:10px;display:grid;gap:6px">
+          <div class="line"><span>Subtotal</span><span id="coSubtotal">Rp0</span></div>
+          <div class="line"><span>Diskon</span><span id="coDiscount">- Rp0</span></div>
+          <div class="line"><span>PPN (11%)</span><span id="coTax">Rp0</span></div>
+          <div class="line"><span>Ongkir</span><span id="coShip">Rp0</span></div>
+          <div class="line total"><span>Total</span><span id="coTotal">Rp0</span></div>
+          <button id="placeOrder" class="btn" style="width:100%">Buat Pesanan</button>
+          <button id="waOrder" class="btn ghost" style="width:100%">Kirim via WhatsApp</button>
+          <span class="footnote">Kupon: <b>MAKANHEMAT</b> diskon 10% (maks Rp20.000). PPN 11% sesuai ketentuan. Ongkir Rp10.000, gratis ≥ Rp100.000 atau jika ambil sendiri.</span>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">Tersimpan.</div>
+
+  <script>
+    // --- DATA (7 Produk) ---
+    const PRODUCTS = [
+      {id:'rice bowl', name:'Hut Rice Bowl', price:15000, img:'rice.jpg', desc:'Daging ayam empuk,rempah berkualitas.', tags:['sambal','best seller']},
+      {id:'basreng', name:'Beta basreng', price:10000, img:'basreng.jpg', desc:'rasa yang kriuk dan berbagai rasa yang.', tags:['favorit','grill']},
+      {id:'krpik tempe', name:'Kripik Tempe', price:7000, img:'tempe.jpg', desc:'enak renyah dan rasanya pasti enak.', tags:['best seller 2 dengan rasa']},
+      {id:'salad', name:'salad buah', price:15000, img:'salad.jpg', desc:'buah yang berkualitas tiggi dan nikmat dijadikan salad.', tags:['buah yang segar','']},
+      {id:'jasuke', name:'Raja Jasuke', price:10000, img:'jasuke.jpg', desc:'rasa jagung yang manis dan tambahan susu lebih manis.', tags:['jagung yang bahan kualitas ']},
+      {id:'cincau', name:'Cincau shiencau', price:10000, img:'cincau.jpg', desc:'nikmat dan segar.', tags:['tes kriuk']},
+      {id:'krpik ubi', name:'Kripik Ubi', price:10000, img:'Keripik.jpg', desc:'rasa yang unik, .', tags:['berbeda tapi ini juga pasaran tinggi yang nikmat banget']},
+      {id:'makaroni', name : 'makaroni ' , price :10000,img:'makaroni.jpg', desc:'rasa yang gurih dan nikmat ', tags:['kruik yang tidak begitu keras dan rasanya nikmat']},
+    ];
+
+    // --- STATE ---
+    const CART = JSON.parse(localStorage.getItem('CART_V1')||'{}'); // {id: qty}
+    const COUPON = { code:'MAKANHEMAT', pct:0.10, cap:20000 };
+    const TAX_RATE = 0.11;
+    const SHIP_FLAT = 10000;
+
+    // --- HELPERS ---
+    const fmt = n => new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(n||0);
+    const toast = (t)=>{const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1600)};
+
+    function saveCart(){ localStorage.setItem('CART_V1', JSON.stringify(CART)); renderCart(); }
+
+    function cartItems(){
+      return Object.entries(CART).map(([id,qty])=> ({...PRODUCTS.find(p=>p.id===id), qty}));
+    }
+
+    function computeTotals(state={coupon: null, shipMode:'delivery'}){
+      const items = cartItems();
+      const subtotal = items.reduce((s,it)=> s + it.price * it.qty, 0);
+      let discount = 0;
+      if(state.coupon && state.coupon.code===COUPON.code){
+        discount = Math.min(subtotal * COUPON.pct, COUPON.cap);
+      }
+      const taxedBase = Math.max(subtotal - discount, 0);
+      const tax = Math.round(taxedBase * TAX_RATE);
+      let shipping = state.shipMode==='pickup' ? 0 : (taxedBase >= 100000 ? 0 : SHIP_FLAT);
+      const total = Math.max(taxedBase + tax + shipping, 0);
+      return {subtotal, discount, tax, shipping, total};
+    }
+
+    // --- RENDER PRODUCTS ---
+    const grid = document.getElementById('productGrid');
+    function renderProducts(list){
+      grid.innerHTML = '';
+      list.forEach(p=>{
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="imgwrap">
+            <img src="${p.img}" alt="${p.name}" loading="lazy"/>
+            <div class="badges">${p.tags.map(t=>`<span class='badge'>${t}</span>`).join('')}</div>
+          </div>
+          <div class="content">
+            <div class="title">${p.name}</div>
+            <div class="desc">${p.desc}</div>
+          </div>
+          <div class="price">
+            <strong>${fmt(p.price)}</strong>
+            <div class="qty">
+              <button aria-label="kurangi" data-act="dec" data-id="${p.id}">−</button>
+              <span id="qty-${p.id}">${CART[p.id]||0}</span>
+              <button aria-label="tambah" data-act="inc" data-id="${p.id}">+</button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // --- SEARCH ---
+    document.getElementById('search').addEventListener('input', e=>{
+      const q = e.target.value.toLowerCase().trim();
+      const result = PRODUCTS.filter(p=> [p.name,p.desc,...p.tags].join(' ').toLowerCase().includes(q));
+      renderProducts(result);
+    });
+
+    // --- PRODUCT BUTTONS (Event Delegation) ---
+    grid.addEventListener('click', (e)=>{
+      const btn = e.target.closest('button');
+      if(!btn) return;
+      const id = btn.getAttribute('data-id');
+      const act = btn.getAttribute('data-act');
+      if(!id) return;
+      const cur = CART[id]||0;
+      if(act==='inc') CART[id] = cur + 1;
+      if(act==='dec') CART[id] = Math.max(cur - 1, 0);
+      if(CART[id]===0) delete CART[id];
+      document.getElementById('qty-'+id).textContent = CART[id]||0;
+      saveCart();
+      document.getElementById('cartCount').textContent = Object.values(CART).reduce((s,n)=>s+n,0);
+    });
+
+    // --- CART DRAWER ---
+    const drawer = document.getElementById('drawer');
+    document.getElementById('btnCart').onclick = ()=> drawer.classList.add('open');
+    document.getElementById('closeDrawer').onclick = ()=> drawer.classList.remove('open');
+    document.getElementById('clearCart').onclick = ()=>{ for(const k in CART) delete CART[k]; saveCart(); toast('Keranjang dikosongkan'); };
+
+    function renderCart(){
+      const items = cartItems();
+      const box = document.getElementById('cartItems');
+      box.innerHTML = items.length? '' : '<p class="footnote">Keranjang kosong. Tambahkan menu dulu ya 🍽️</p>';
+      items.forEach(it=>{
+        const row = document.createElement('div');
+        row.className='row';
+        row.innerHTML = `
+          <img src="${it.img}" alt="${it.name}"/>
+          <div>
+            <div class="title">${it.name}</div>
+            <div class="muted">${it.qty} × ${fmt(it.price)}</div>
+          </div>
+          <div class="actions">
+            <div>${fmt(it.qty*it.price)}</div>
+            <div style="display:flex;gap:6px">
+              <button class="btn ghost" data-id="${it.id}" data-op="minus">−</button>
+              <button class="btn ghost" data-id="${it.id}" data-op="plus">+</button>
+              <button class="btn" style="background:var(--danger);color:white" data-id="${it.id}" data-op="remove">Hapus</button>
+            </div>
+          </div>`;
+        box.appendChild(row);
+      });
+      box.querySelectorAll('button').forEach(b=> b.onclick = ()=>{
+        const id = b.getAttribute('data-id');
+        const op = b.getAttribute('data-op');
+        if(op==='plus') CART[id]=(CART[id]||0)+1;
+        if(op==='minus') CART[id]=Math.max((CART[id]||0)-1,0);
+        if(op==='remove') delete CART[id];
+        if(CART[id]===0) delete CART[id];
+        saveCart();
+        renderProducts(PRODUCTS);
+        document.getElementById('cartCount').textContent = Object.values(CART).reduce((s,n)=>s+n,0);
+      });
+      // totals
+      const shipMode = document.querySelector('.chip.active')?.dataset.ship || 'delivery';
+      const {subtotal, discount, tax, shipping, total} = computeTotals({coupon: window._coupon||null, shipMode});
+      document.getElementById('sumSubtotal').textContent = fmt(subtotal);
+      document.getElementById('sumDiscount').textContent = '- ' + fmt(discount);
+      document.getElementById('sumTax').textContent = fmt(tax);
+      document.getElementById('sumShip').textContent = fmt(shipping);
+      document.getElementById('sumTotal').textContent = fmt(total);
+      document.getElementById('btnCheckout').disabled = items.length===0;
+    }
+
+    // --- CHECKOUT DIALOG ---
+    const coDlg = document.getElementById('checkoutDialog');
+    document.getElementById('btnCheckout').onclick = ()=>{ coDlg.showModal(); renderCheckout(); };
+    document.getElementById('closeCheckout').onclick = (e)=>{ e.preventDefault(); coDlg.close(); };
+
+    // toggle shipping mode chips
+    document.querySelectorAll('.chip').forEach(c=> c.addEventListener('click',()=>{
+      document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+      c.classList.add('active');
+      renderCart();
+      renderCheckout();
+    }));
+
+    function renderCheckout(){
+      const list = document.getElementById('checkoutList');
+      const items = cartItems();
+      list.innerHTML = items.map(it=> `
+        <div class="line" style="gap:8px">
+          <span>${it.name} × ${it.qty}</span>
+          <span>${fmt(it.qty*it.price)}</span>
+        </div>`).join('') || '<p class="footnote">Belum ada item.</p>';
+      const shipMode = document.querySelector('.chip.active')?.dataset.ship || 'delivery';
+      const {subtotal, discount, tax, shipping, total} = computeTotals({coupon: window._coupon||null, shipMode});
+      document.getElementById('coSubtotal').textContent = fmt(subtotal);
+      document.getElementById('coDiscount').textContent = '- ' + fmt(discount);
+      document.getElementById('coTax').textContent = fmt(tax);
+      document.getElementById('coShip').textContent = fmt(shipping);
+      document.getElementById('coTotal').textContent = fmt(total);
+    }
+
+    // Coupon
+    document.getElementById('applyCoupon').onclick = ()=>{
+      const code = document.getElementById('fCoupon').value.trim().toUpperCase();
+      if(!code){ window._coupon=null; toast('Kupon dihapus'); }
+      else if(code===COUPON.code){ window._coupon=COUPON; toast('Kupon diterapkan'); }
+      else { window._coupon=null; toast('Kupon tidak valid'); }
+      renderCart(); renderCheckout();
+    };
+
+    // Place Order (simulate) & WhatsApp
+    function buildOrder(){
+      const shipMode = document.querySelector('.chip.active')?.dataset.ship || 'delivery';
+      const {subtotal, discount, tax, shipping, total} = computeTotals({coupon: window._coupon||null, shipMode});
+      const items = cartItems();
+      const order = {
+        id: 'ORD' + Math.random().toString(36).slice(2,8).toUpperCase(),
+        at: new Date().toLocaleString('id-ID'),
+        items,
+        coupon: window._coupon?.code || null,
+        shipMode,
+        totals:{subtotal,discount,tax,shipping,total},
+        customer:{
+          name: document.getElementById('fName').value.trim(),
+          phone: document.getElementById('fPhone').value.trim(),
+          address: document.getElementById('fAddress').value.trim(),
+          note: document.getElementById('fNote').value.trim(),
+          pay: document.getElementById('fPay').value
+        }
+      };
+      return order;
+    }
+
+    function validate(){
+      const req = ['fName','fPhone'];
+      if(document.querySelector('.chip.active')?.dataset.ship !== 'pickup') req.push('fAddress');
+      for(const id of req){ if(!document.getElementById(id).value.trim()){ toast('Lengkapi data: ' + id); return false; } }
+      if(cartItems().length===0){ toast('Keranjang kosong'); return false; }
+      return true;
+    }
+
+    document.getElementById('placeOrder').onclick = (e)=>{
+      e.preventDefault();
+      if(!validate()) return;
+      const order = buildOrder();
+      localStorage.setItem('LAST_ORDER', JSON.stringify(order));
+      for(const k in CART) delete CART[k]; saveCart();
+      renderProducts(PRODUCTS);
+      renderCheckout();
+      toast('Pesanan dibuat #' + order.id);
+      // Optionally close dialog
+      // coDlg.close();
+    };
+
+    document.getElementById('waOrder').onclick = (e)=>{
+      e.preventDefault();
+      if(!validate()) return;
+      const order = buildOrder();
+      const vendor = localStorage.getItem('VENDOR_WA') || '085198029326'; 
+      const lines = [];
+      lines.push(`*Pesanan Baru* %23${order.id}`);
+      lines.push('Tanggal: ' + order.at);
+      lines.push('\n*Item:*');
+      order.items.forEach(it=> lines.push(`- ${it.name} × ${it.qty} = ${fmt(it.qty*it.price)}`));
+      lines.push('\nSubtotal: ' + fmt(order.totals.subtotal));
+      if(order.coupon) lines.push('Diskon ('+order.coupon+'): -' + fmt(order.totals.discount));
+      lines.push('PPN 11%: ' + fmt(order.totals.tax));
+      lines.push('Ongkir: ' + fmt(order.totals.shipping));
+      lines.push('*Total: ' + fmt(order.totals.total) + '*');
+      lines.push('\n*Pengiriman:* ' + (order.shipMode==='pickup'?'Ambil sendiri':'Antar'));
+      lines.push('*Pembayaran:* ' + order.customer.pay);
+      lines.push('*Nama:* ' + order.customer.name);
+      lines.push('*WA:* ' + order.customer.phone);
+      if(order.customer.address) lines.push('*Alamat:* ' + order.customer.address);
+      if(order.customer.note) lines.push('*Catatan:* ' + order.customer.note);
+      const text = encodeURIComponent(lines.join('\n'));
+      const url = `https://wa.me/${vendor}?text=${text}`;
+      window.open(url, '_blank');
+    };
+
+    // Init
+    renderProducts(PRODUCTS);
+    renderCart();
+    document.getElementById('cartCount').textContent = Object.values(CART).reduce((s,n)=>s+n,0);
+  </script>
+</body>
+</html>
